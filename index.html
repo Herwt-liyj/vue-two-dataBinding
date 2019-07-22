@@ -13,6 +13,11 @@
 </head>
 
 <body>
+    <div style='margin: 40px;'>
+        <input type='text' id='input'>
+        <p>显示value: <span id='span'></span></p>
+    </div>
+
     <div id="app">
         <form>
             <input type="text" v-model="number">
@@ -20,9 +25,32 @@
         </form>
         <h3 v-bind="number"></h3>
     </div>
-    <!-- built files will be auto injected -->
+    <!-- 简略模拟实现 -->
     <script>
-        
+        let obj = {};
+        let input = document.getElementById('input');
+        let span = document.getElementById('span');
+        //数据劫持
+        Object.defineProperty(obj, 'text', {
+            configurable: true,
+            enumerable: true,
+            get: function () {
+                console.log('获取数据');
+                return obj['text'];
+            },
+            set: function (newVal) {
+                console.log('set数据更新');
+                input.value = newVal;
+                span.innerHTML = newVal;
+            }
+        })
+        input.addEventListener('change', function (e) {
+            obj.text = e.target.value
+        })
+    </script>
+    <!-- 完整实现vue的双向绑定 -->
+    <script>
+
         // 构建函数yuVue初始化
         function yuVue(options) {
             this._init(options)
@@ -123,8 +151,8 @@
                     ))
                 }
             }
-        } 
-        function yuWatcher(name, el,vm, exp, attr) {
+        }
+        function yuWatcher(name, el, vm, exp, attr) {
             this.name = name;  //指令名称，对应文本节点，如text
             this.el = el;     //指令对应的DOM元素
             this.vm = vm;     //指令所属vue实例
@@ -132,8 +160,8 @@
             this.attr = attr;  //绑定的属性值，如innerHTML
             this.update();
         }
-        
-        
+
+
         yuWatcher.prototype.update = function () {
             this.el[this.attr] = this.vm.$data[this.exp];
             //如h3的innerHTML = this.data.number;当number改变则触发update方法，保证对应的DO实时更新
